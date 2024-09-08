@@ -6,7 +6,7 @@ import torch
 from mani_skill.agents.multi_agent import MultiAgent
 from mani_skill.envs.sapien_env import BaseEnv
 from mani_skill.utils.wrappers.gymnasium import CPUGymWrapper
-from tests.utils import (
+from tescts.utils import (
     CONTROL_MODES_STATIONARY_SINGLE_ARM,
     ENV_IDS,
     MULTI_AGENT_ENV_IDS,
