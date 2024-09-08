@@ -2,12 +2,12 @@ import argparse
 import signal
 
 import gymnasium as gym
-import numpy as np
 from matplotlib import pyplot as plt
+import numpy as np
 
-signal.signal(signal.SIGINT, signal.SIG_DFL)  # allow ctrl+c
+signal.signal(signal.SIGINT, signal.SIG_DFL) # allow ctrl+c
 from mani_skill.envs.sapien_env import BaseEnv
-from mani_skill.utils import common, visualization
+from mani_skill.utils import visualization
 from mani_skill.utils.wrappers import RecordEpisode
 
 
@@ -115,7 +115,7 @@ def main():
         # key = opencv_viewer.imshow(render_frame.cpu().numpy()[0])
         key = renderer.last_event.key if renderer.last_event is not None else None
         body_action = np.zeros([3])
-        base_action = np.zeros([2])  # hardcoded for fetch robot
+        base_action = np.zeros([3])  # hardcoded for fetch robot
 
         # Parse end-effector action
         if (
@@ -137,6 +137,10 @@ def main():
                 base_action[0] = 1
             elif key == "s":  # backward
                 base_action[0] = -1
+            elif key == "a":  # left
+                base_action[1] = 1
+            elif key == "d":  # right
+                base_action[1] = -1
             elif key == "q":  # rotate counter
                 base_action[2] = 1
             elif key == "e":  # rotate clockwise
@@ -218,10 +222,13 @@ def main():
         # -------------------------------------------------------------------------- #
         # Post-process action
         # -------------------------------------------------------------------------- #
-        action_dict = dict(
-            base=base_action, arm=ee_action, body=body_action, gripper=gripper_action
-        )
-        action_dict = common.to_tensor(action_dict)
+        
+        import torch
+
+        def tt(a):
+            return torch.tensor(a, device=env.device)
+
+        action_dict = dict(base=tt(base_action), arm=tt(ee_action), body=tt(body_action), gripper=tt(gripper_action))
         action = env.agent.controller.from_action_dict(action_dict)
 
         obs, reward, terminated, truncated, info = env.step(action)
