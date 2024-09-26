@@ -173,7 +173,7 @@ class Kinematics:
         else:
             result, success, error = self.pmodel.compute_inverse_kinematics(
                 self.end_link_idx,
-                target_pose.sp,
+                target_pose,
                 initial_qpos=q0.cpu().numpy()[0],
                 active_qmask=self.qmask,
                 max_iterations=100,
