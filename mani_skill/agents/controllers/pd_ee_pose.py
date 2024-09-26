@@ -113,6 +113,7 @@ class PDEEPosController(PDJointPosController):
             self._step_size = (self._target_qpos - self._start_qpos) / self._sim_steps
         else:
             self.set_drive_targets(self._target_qpos)
+    
 
     def get_state(self) -> dict:
         if self.config.use_target:
@@ -236,6 +237,37 @@ class PDEEPoseController(PDEEPosController):
             target_pose = Pose.create_from_pq(target_pos, target_quat)
 
         return target_pose
+    
+    def get_target_qpos(self, action_global: Array, action_base: Array, q0):
+        '''
+        Action: delta pos (3) and delta euler angle in 'XYZ' (3)
+        '''
+        # action_global = self._preprocess_action(action_global)
+        # action_base = self._preprocess_action(action_base)   # Should not normalize the action for calculating IK
+        assert not self.config.use_target, "Doesn't support use_target."
+        prev_ee_pose_global = self.ee_pose
+        assert 'root_translation:root_aligned_body_rotation' in self.config.frame, self.config.frame
+        assert self.config.use_delta, self.config.use_delta
+        target_pose_global = self.compute_target_pose(prev_ee_pose_global, action_global)
+        pos_only = type(self.config) == PDEEPosControllerConfig
+        assert not pos_only
+        assert target_pose_global.p.device == torch.device('cuda:0'), target_pose_global.p.device
+        
+        target_pose_base = self.articulation.pose.inv() * target_pose_global
+
+        # print(target_pose_base)
+        # breakpoint()
+        # print(self.articulation.get_qpos())
+        # breakpoint()
+
+        target_qpos = self.kinematics.compute_ik(
+            target_pose_base,
+            q0,
+            pos_only=pos_only,
+            action=action_base,
+        )
+        assert target_qpos is not None
+        return target_qpos
 
 
 @dataclass
