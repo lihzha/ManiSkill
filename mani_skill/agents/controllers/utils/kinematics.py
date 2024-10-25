@@ -147,6 +147,7 @@ class Kinematics:
                     rot=target_pose.q,
                     device=self.device,
                 )
+                self.pik.dof = len(self.active_ancestor_joint_idxs)
                 self.pik.initial_config = q0  # shape (num_retries, active_ancestor_dof)
                 result = self.pik.solve(
                     tf

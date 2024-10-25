@@ -240,7 +240,7 @@ class BaseAgent:
         """Get the currently activated controller uid."""
         return self._control_mode
 
-    def set_control_mode(self, control_mode: str = None):
+    def set_control_mode(self, control_mode: str = None, first_called=True):
         """Sets the controller to an pre-existing controller of this agent.
         This does not reset the controller. If given control mode is None, will set to the default control mode."""
         if control_mode is None:
@@ -269,7 +269,7 @@ class BaseAgent:
                     config, self.robot, self._control_freq, scene=self.scene
                 )
             self.controllers[control_mode].set_drive_property()
-            if balance_passive_force:
+            if balance_passive_force and first_called:
                 # NOTE (stao): Balancing passive force is currently not supported in PhysX, so we work around by disabling gravity
                 if not self.scene._gpu_sim_initialized:
                     for link in self.robot.links:
