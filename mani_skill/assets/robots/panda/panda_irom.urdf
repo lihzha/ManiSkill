@@ -237,7 +237,8 @@
   <!-- Define the hand_tcp frame -->
   <link name="panda_hand_tcp"/>
   <joint name="panda_hand_tcp_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 0.175"/>
+    <!-- <origin rpy="0 0 0" xyz="0 0 0.175"/> -->
+    <origin rpy="0 0 0" xyz="0 0 0"/>   <!-- Work around to get ee pose as tcp pose and ee control instead of osc control  -->
     <parent link="panda_hand"/>
     <child link="panda_hand_tcp"/>
   </joint>
@@ -314,7 +315,7 @@
     <visual>
       <origin rpy="1.57 3.1415926 0" xyz="-0.0177 -0.104 0.00"/>
       <geometry>
-        <mesh filename="realsense2_description/meshes/wrist_mount_irom.stl"/>
+        <mesh filename="realsense2_description/meshes/wrist_mount_irom.glb"/>
       </geometry>
     </visual>
     <collision>
