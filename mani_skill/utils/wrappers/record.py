@@ -288,7 +288,8 @@ class RecordEpisode(gym.Wrapper):
         self._save_video = save_video
         self.info_on_video = info_on_video
         self.render_images = []
-        self.video_nrows = int(np.sqrt(self.unwrapped.num_envs))
+        # self.video_nrows = int(np.sqrt(self.unwrapped.num_envs))
+        self.video_nrows = int(self.unwrapped.num_envs)
         self._avoid_overwriting_video = avoid_overwriting_video
 
         self._already_warned_about_state_dict_inconsistency = False
