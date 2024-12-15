@@ -321,7 +321,7 @@
     <collision>
       <origin rpy="1.57 3.1415926 0" xyz="-0.0177 -0.104 0.00"/>
       <geometry>
-        <mesh filename="realsense2_description/meshes/wrist_mount_irom.glb"/>
+        <mesh filename="realsense2_description/meshes/wrist_mount_irom.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -340,7 +340,7 @@
 
   <link name="camera_reference_link"/>
   <joint name="camera_reference_joint" type="fixed">
-      <origin rpy="3.1415926 0 0 " xyz="0.02 0 0"/>
+      <origin rpy="3.1415926 0 0 " xyz="0.0 0 0"/>
       <parent link="camera_reference_link_flipped"/>
       <child link="camera_reference_link"/>
   </joint>
