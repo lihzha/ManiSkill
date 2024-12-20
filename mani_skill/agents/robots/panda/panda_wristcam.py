@@ -4,7 +4,6 @@ import sapien
 from mani_skill import PACKAGE_ASSET_DIR
 from mani_skill.agents.registration import register_agent
 from mani_skill.sensors.camera import CameraConfig
-from mani_skill.utils import sapien_utils
 
 from .panda import Panda
 
@@ -14,7 +13,7 @@ class PandaWristCam(Panda):
     """Panda arm robot with the real sense camera attached to gripper"""
 
     uid = "panda_wristcam"
-    urdf_path = f"{PACKAGE_ASSET_DIR}/robots/panda/panda_tri.urdf"
+    urdf_path = f"{PACKAGE_ASSET_DIR}/robots/panda/panda_v3.urdf"
 
     @property
     def _sensor_configs(self):

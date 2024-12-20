@@ -2,7 +2,6 @@ from copy import deepcopy
 
 import numpy as np
 import sapien
-import sapien.physx as physx
 import torch
 
 from mani_skill import PACKAGE_ASSET_DIR
@@ -65,8 +64,10 @@ class Panda(BaseAgent):
     ]
     ee_link_name = "panda_hand_tcp"
 
-    arm_stiffness = 1e3
-    arm_damping = 1e2
+    # arm_stiffness = 1e3
+    # arm_damping = 1e2
+    arm_stiffness = [1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3]
+    arm_damping = [1e2, 1e2, 1e2, 1e2, 1e2, 1e2, 1e2]
     arm_force_limit = 100
 
     gripper_stiffness = 1e3
