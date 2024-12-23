@@ -237,8 +237,8 @@
   <!-- Define the hand_tcp frame -->
   <link name="panda_hand_tcp"/>
   <joint name="panda_hand_tcp_joint" type="fixed">
-    <!-- <origin rpy="0 0 0" xyz="0 0 0.175"/> -->
-    <origin rpy="0 0 0" xyz="0 0 0"/>   <!-- Work around to get ee pose as tcp pose and ee control instead of osc control  -->
+    <origin rpy="0 0 0" xyz="0 0 0.21"/>
+    <!-- <origin rpy="0 0 0" xyz="0 0 0"/>   Work around to get ee pose as tcp pose and ee control instead of osc control  -->
     <parent link="panda_hand"/>
     <child link="panda_hand_tcp"/>
   </joint>

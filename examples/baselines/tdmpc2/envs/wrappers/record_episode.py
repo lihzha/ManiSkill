@@ -1,12 +1,14 @@
-import numpy as np
 from pathlib import Path
-from mani_skill.utils import common, gym_utils
-from mani_skill.utils.wrappers import RecordEpisode
+
+import numpy as np
 from common.logger import Logger
+from mani_skill.utils import common
 from mani_skill.utils.visualization.misc import (
     images_to_video,
     tile_images,
 )
+from mani_skill.utils.wrappers import RecordEpisode
+
 
 class RecordEpisodeWrapper(RecordEpisode):
     def __init__(
@@ -25,11 +27,26 @@ class RecordEpisodeWrapper(RecordEpisode):
         video_fps=30,
         source_type=None,
         source_desc=None,
-        logger:Logger=None,
+        logger: Logger = None,
     ):
-        super().__init__(env, output_dir, save_trajectory, trajectory_name, save_video, info_on_video, save_on_reset, save_video_trigger, max_steps_per_video, clean_on_close, record_reward, video_fps, source_type, source_desc)
+        super().__init__(
+            env,
+            output_dir,
+            save_trajectory,
+            trajectory_name,
+            save_video,
+            info_on_video,
+            save_on_reset,
+            save_video_trigger,
+            max_steps_per_video,
+            clean_on_close,
+            record_reward,
+            video_fps,
+            source_type,
+            source_desc,
+        )
         self.logger = logger
-        self.untiled_render_images = [] # render_images but not tiled by num_envs. for organized wandb video
+        self.untiled_render_images = []  # render_images but not tiled by num_envs. for organized wandb video
 
     def capture_image(self):
         img = self.env.render()
@@ -39,8 +56,8 @@ class RecordEpisodeWrapper(RecordEpisode):
         else:
             tiled_img = img
             img = np.expand_dims(img, axis=0)
-        self.untiled_render_images.append(img) # (num_envs, h, w, 3)
-        return tiled_img # (h, w, 3)
+        self.untiled_render_images.append(img)  # (num_envs, h, w, 3)
+        return tiled_img  # (h, w, 3)
 
     def flush_video(
         self,
