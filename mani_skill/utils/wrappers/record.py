@@ -7,8 +7,6 @@ from typing import Callable, List, Optional, Union
 import gymnasium as gym
 import h5py
 import numpy as np
-import sapien.physx as physx
-import torch
 
 from mani_skill import get_commit_info
 from mani_skill.envs.sapien_env import BaseEnv
@@ -255,12 +253,12 @@ class RecordEpisode(gym.Wrapper):
         self.save_on_reset = save_on_reset
         self.save_trajectory = save_trajectory
         if self.base_env.num_envs > 1 and save_video:
-            assert (
-                max_steps_per_video is not None
-            ), "On GPU parallelized environments, \
+            assert max_steps_per_video is not None, (
+                "On GPU parallelized environments, \
                 there must be a given max steps per video value in order to flush videos in order \
                 to avoid issues caused by partial resets. If your environment does not do partial \
                 resets you may set max_steps_per_video equal to the max_episode_steps"
+            )
         self.clean_on_close = clean_on_close
         self.record_reward = record_reward
         self.record_env_state = record_env_state
@@ -278,9 +276,9 @@ class RecordEpisode(gym.Wrapper):
                 episodes=[],
             )
             if self._json_data["env_info"] is not None:
-                self._json_data["env_info"][
-                    "max_episode_steps"
-                ] = self.max_episode_steps
+                self._json_data["env_info"]["max_episode_steps"] = (
+                    self.max_episode_steps
+                )
             if source_type is not None:
                 self._json_data["source_type"] = source_type
             if source_desc is not None:
@@ -361,7 +359,6 @@ class RecordEpisode(gym.Wrapper):
         options: Optional[dict] = dict(),
         **kwargs,
     ):
-
         if self.save_on_reset:
             if self.save_video and self.num_envs == 1:
                 self.flush_video()
