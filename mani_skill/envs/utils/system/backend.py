@@ -1,12 +1,12 @@
 """
 Utilities for determining the simulation backend and devices
 """
+
 import platform
 from dataclasses import dataclass
 
 import sapien
 import torch
-
 from mani_skill.utils.logging_utils import logger
 
 

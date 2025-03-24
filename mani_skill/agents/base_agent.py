@@ -11,7 +11,6 @@ from gymnasium import spaces
 
 from mani_skill import format_path
 from mani_skill.agents.controllers.pd_joint_pos import (
-    PDJointPosController,
     PDJointPosControllerConfig,
 )
 from mani_skill.sensors.base_sensor import BaseSensor, BaseSensorConfig
@@ -245,10 +244,10 @@ class BaseAgent:
         This does not reset the controller. If given control mode is None, will set to the default control mode."""
         if control_mode is None:
             control_mode = self._default_control_mode
-        assert (
-            control_mode in self.supported_control_modes
-        ), "{} not in supported modes: {}".format(
-            control_mode, self.supported_control_modes
+        assert control_mode in self.supported_control_modes, (
+            "{} not in supported modes: {}".format(
+                control_mode, self.supported_control_modes
+            )
         )
         self._control_mode = control_mode
         # create controller on the fly here

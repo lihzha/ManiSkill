@@ -1,4 +1,5 @@
 """Utilities to convert actions between different control modes. Note that this code is specifically designed for the Franka Panda robot arm, it is not guaranteed to work for other robots."""
+
 from typing import Union
 
 import numpy as np
@@ -96,9 +97,9 @@ def from_pd_joint_pos_to_ee(
 
     ori_controller: CombinedController = ori_env.agent.controller
     controller: CombinedController = env.agent.controller
-    assert (
-        "arm" in ori_controller.controllers
-    ), "Could not find the controller for the robot arm. This controller conversion tool requires there to be a key called 'arm' in the controller"
+    assert "arm" in ori_controller.controllers, (
+        "Could not find the controller for the robot arm. This controller conversion tool requires there to be a key called 'arm' in the controller"
+    )
     ori_arm_controller: PDJointPosController = ori_controller.controllers["arm"]
     arm_controller: PDEEPoseController = controller.controllers["arm"]
     assert isinstance(arm_controller, PDEEPoseController) or isinstance(
@@ -107,7 +108,9 @@ def from_pd_joint_pos_to_ee(
     assert arm_controller.config.frame in [
         "root_translation:root_aligned_body_rotation",
         "root_translation",
-    ], "Currently only support the 'root_translation:root_aligned_body_rotation' ee control frame for delta pose control and 'root_translation' ee control frame for delta pos control"
+    ], (
+        "Currently only support the 'root_translation:root_aligned_body_rotation' ee control frame for delta pose control and 'root_translation' ee control frame for delta pos control"
+    )
     target_controller_is_delta = arm_controller.config.use_delta
 
     ee_link: Link = arm_controller.ee_link
@@ -133,9 +136,9 @@ def from_pd_joint_pos_to_ee(
         # environment controller to compute the target ee pose to try and reach. this is because if we attempt to reach the original envs ee link pose
         # we may fall short and fail.
         full_qpos = ori_controller.articulation.get_qpos()
-        full_qpos[
-            :, ori_arm_controller.active_joint_indices
-        ] = ori_arm_controller._target_qpos
+        full_qpos[:, ori_arm_controller.active_joint_indices] = (
+            ori_arm_controller._target_qpos
+        )
         pin_model.compute_forward_kinematics(full_qpos.cpu().numpy()[0])
         target_ee_pose_pin = Pose.create(
             ori_controller.articulation.pose.sp
