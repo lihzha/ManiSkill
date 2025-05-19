@@ -7,10 +7,16 @@ from mani_skill.agents.base_agent import BaseAgent
 from mani_skill.envs.sapien_env import BaseEnv
 from mani_skill.envs.scene import ManiSkillScene
 from mani_skill.utils.structs.pose import to_sapien_pose
-import sapien.physx as physx
+
 OPEN = 1
 CLOSED = -1
 
+def interpolate_array(arr: np.ndarray, N: int) -> np.ndarray:
+    T, D = arr.shape
+    x_old = np.arange(T)
+    x_new = np.linspace(0, T - 1, T * N)
+
+    return np.stack([np.interp(x_new, x_old, arr[:, d]) for d in range(D)], axis=1)
 
 class PandaArmMotionPlanningSolver:
     def __init__(
@@ -81,7 +87,7 @@ class PandaArmMotionPlanningSolver:
         planner.set_base_pose(np.hstack([self.base_pose.p, self.base_pose.q]))
         return planner
 
-    def follow_path(self, result, refine_steps: int = 0):
+    def follow_path(self, result, refine_steps: int = 0, early_termination=True):
         n_step = result["position"].shape[0]
         for i in range(n_step + refine_steps):
             qpos = result["position"][min(i, n_step - 1)]
@@ -91,6 +97,9 @@ class PandaArmMotionPlanningSolver:
             else:
                 action = np.hstack([qpos, self.gripper_state])
             obs, reward, terminated, truncated, info = self.env.step(action)
+            if early_termination:
+                if terminated or truncated:
+                    break
             self.elapsed_steps += 1
             if self.print_env_info:
                 print(
@@ -101,7 +110,11 @@ class PandaArmMotionPlanningSolver:
         return obs, reward, terminated, truncated, info
 
     def move_to_pose_with_RRTConnect(
-        self, pose: sapien.Pose, dry_run: bool = False, refine_steps: int = 0
+        self,
+        pose: sapien.Pose,
+        dry_run: bool = False,
+        refine_steps: int = 0,
+        rrt_range=0.3,
     ):
         pose = to_sapien_pose(pose)
         if self.grasp_pose_visual is not None:
@@ -113,6 +126,8 @@ class PandaArmMotionPlanningSolver:
             time_step=self.base_env.control_timestep,
             use_point_cloud=self.use_point_cloud,
             wrt_world=True,
+            no_simplification=True,
+            rrt_range=rrt_range,
         )
         if result["status"] != "Success":
             print(result["status"])
@@ -124,13 +139,13 @@ class PandaArmMotionPlanningSolver:
         return self.follow_path(result, refine_steps=refine_steps)
 
     def move_to_pose_with_screw(
-        self, pose: sapien.Pose, dry_run: bool = False, refine_steps: int = 0
+        self, pose: sapien.Pose, dry_run: bool = False, refine_steps: int = 0, time_step=None, interpolate_factor=None, early_termination=True
     ):
         pose = to_sapien_pose(pose)
         # try screw two times before giving up
         if self.grasp_pose_visual is not None:
             self.grasp_pose_visual.set_pose(pose)
-        pose = sapien.Pose(p=pose.p , q=pose.q)
+        pose = sapien.Pose(p=pose.p, q=pose.q)
         result = self.planner.plan_screw(
             np.concatenate([pose.p, pose.q]),
             self.robot.get_qpos().cpu().numpy()[0],
@@ -141,7 +156,7 @@ class PandaArmMotionPlanningSolver:
             result = self.planner.plan_screw(
                 np.concatenate([pose.p, pose.q]),
                 self.robot.get_qpos().cpu().numpy()[0],
-                time_step=self.base_env.control_timestep,
+                time_step=self.base_env.control_timestep if time_step is None else time_step,
                 use_point_cloud=self.use_point_cloud,
             )
             if result["status"] != "Success":
@@ -151,7 +166,9 @@ class PandaArmMotionPlanningSolver:
         self.render_wait()
         if dry_run:
             return result
-        return self.follow_path(result, refine_steps=refine_steps)
+        if interpolate_factor:
+            result["position"] = interpolate_array(result["position"], interpolate_factor)
+        return self.follow_path(result, refine_steps=refine_steps, early_termination=early_termination)
 
     def open_gripper(self):
         self.gripper_state = OPEN
@@ -171,7 +188,7 @@ class PandaArmMotionPlanningSolver:
                 self.base_env.render_human()
         return obs, reward, terminated, truncated, info
 
-    def close_gripper(self, t=6, gripper_state = CLOSED):
+    def close_gripper(self, t=6, gripper_state=CLOSED):
         self.gripper_state = gripper_state
         qpos = self.robot.get_qpos()[0, :-2].cpu().numpy()
         for i in range(t):
@@ -213,6 +230,7 @@ class PandaArmMotionPlanningSolver:
     def close(self):
         pass
 
+
 from transforms3d import quaternions
 
 
@@ -224,7 +242,7 @@ def build_panda_gripper_grasp_pose_visual(scene: ManiSkillScene):
     builder.add_sphere_visual(
         pose=sapien.Pose(p=[0, 0, 0.0]),
         radius=grasp_pose_visual_width,
-        material=sapien.render.RenderMaterial(base_color=[0.3, 0.4, 0.8, 0.7])
+        material=sapien.render.RenderMaterial(base_color=[0.3, 0.4, 0.8, 0.7]),
     )
 
     builder.add_box_visual(
